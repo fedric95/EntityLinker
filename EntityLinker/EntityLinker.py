@@ -92,6 +92,8 @@ class Retriever:
     def __init__(self, entities, similarity=None):
         self.entities = entities
         self.similarity = similarity
+        if(self.similarity is None):
+            self.similarity = Retriever.alias_equal
 
         
         
