@@ -66,7 +66,7 @@ class MentionDetector:
             
             
             
-  class Retriever:
+class Retriever:
     
     def alias_equal(mention, aliases):
     
