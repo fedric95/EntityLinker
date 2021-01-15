@@ -228,7 +228,7 @@ class Annotator:
             
             matched_value = list(candidate_entities[i]['value'])
             matched_desc = list(candidate_entities[i]['desc'])
-            
+            matched_entity = list(candidate_entities[i]['entity'])
 
             entity_text = []
             for value, desc in zip(matched_value, matched_desc):
@@ -260,8 +260,9 @@ class Annotator:
                 #print(entity_text[best_match[0]])
                 #print(similarities[best_match[0]])
                 mention_entity['entity']= {
-                    'name': matched_value[best_match[0]],
+                    'value': matched_value[best_match[0]],
                     'description': matched_desc[best_match[0]]
+                    'entity': matched_entity[best_match[0]]
                 }
             linked_entities.append(mention_entity)
         return(linked_entities)
