@@ -112,14 +112,13 @@ class Ranker:
     Returns the list of candidates for each context with similarity scores and sorted arguments
     """
     def rank(self, contexts, candidates):
-        if(len(contexts)!=len(candidates)):
-            raise Exception("The len of the Contexts list is different from the len of the Candidates")
-            
-            
+        
         if(isinstance(contexts, str)):
             contexts = [contexts]
             candidates = [candidates]
         
+        if(len(contexts)!=len(candidates)):
+            raise Exception("The len of the Contexts list is different from the len of the Candidates")
         
         #contexts è una lista di contesti
         #candidates_list è una lista di liste, candidates[i] contiene tutti i candidati del contesto i-esimo
