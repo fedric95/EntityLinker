@@ -91,3 +91,77 @@ class Retriever:
     def __init__(self, entities, similarity=None):
         self.entities = entities
         self.similarity = similarity
+
+        
+        
+        
+        
+class Ranker:
+    
+    #def rank(self, context, candidates):
+    #    res_list = self.rank_all([context], [candidates])
+    #    if(len(res_list)==0):
+    #        return([],[])
+    #    return(res_list[0]['argsorted'], res_list[0]['similarities'])
+    
+    
+    """
+    Returns the list of candidates for each context with similarity scores and sorted arguments
+    """
+    def rank(self, contexts, candidates):
+        if(len(contexts)!=len(candidates)):
+            raise Exception("The len of the Contexts list is different from the len of the Candidates")
+            
+            
+        if(isinstance(contexts, str)):
+            contexts = [contexts]
+            candidates = [candidates]
+        
+        
+        #contexts è una lista di contesti
+        #candidates_list è una lista di liste, candidates[i] contiene tutti i candidati del contesto i-esimo
+        
+        
+        ids = []
+        pairs = []
+        for i in range(len(contexts)):
+            context = contexts[i]
+            context_candidates = candidates[i]
+            for candidate in context_candidates:
+                pairs.append((context, candidate))
+                ids.append(i)
+    
+        
+        if(len(pairs)==0):
+            similarities = []
+        else:
+            similarities = self.model.predict(pairs)
+        
+        res = {}
+        for _id, similarity, pair in zip(ids, similarities, pairs):
+            context = pair[0]
+            candidate = pair[1]
+            
+            if(_id not in res.keys()):
+                res[_id] = {'similarities': [], 'candidates': []}
+            res[_id]['similarities'].append(similarity)
+            res[_id]['candidates'].append(candidate)
+        
+        for _id in res.keys():
+            res[_id]['argsorted'] = np.argsort(-np.array(res[_id]['similarities']))
+        
+        
+        
+        res_list = []
+        for i in range(len(contexts)):
+            if(i in res.keys()):
+                res_list.append(res[i])
+            else:
+                res_list.append({'similarities': [], 'candidates': [], 'argsorted': []})
+        return(res_list)
+        
+    
+    def __init__(self, model=None):
+        self.model = model
+        if(self.model is None):
+            self.model = CrossEncoder('sentence-transformers/ce-ms-marco-electra-base', max_length=512)
