@@ -262,7 +262,6 @@ class Annotator:
         if(self.ranker is None):
             self.ranker = Ranker()
         
-        self.wd = WikidataEntities()
         self.dictionary = dictionary
         
     #def __init__(self, dictionary):
