@@ -1,6 +1,7 @@
+import numpy as np
+import pandas as pd
 import spacy
 from sentence_transformers import CrossEncoder
-
 
 class MentionDetector:
     
@@ -211,10 +212,10 @@ class Annotator:
         ## Permette generalmente di guadagnare tra lo 0.5 e l'1% di accuracy, lo hanno fatto per le entità persona
         ## ma penso che si possa anche applicare per le entità organizations.
         for i in range(len(mentions)):
-            if(types[i] not in ['LOC']):
+            if(types[i] not in list(self.dictionary.keys())):
                 continue
             for j in range(len(mentions)):
-                if(types[j] not in ['LOC']):
+                if(types[j] not in list(self.dictionary.keys())):
                     continue
                 if(mentions[i] in mentions[j]):
                     candidate_entities[i] = candidate_entities[i].append(candidate_entities[j], ignore_index = True)
