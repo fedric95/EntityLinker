@@ -261,7 +261,7 @@ class Annotator:
                 #print(similarities[best_match[0]])
                 mention_entity['entity']= {
                     'value': matched_value[best_match[0]],
-                    'description': matched_desc[best_match[0]]
+                    'description': matched_desc[best_match[0]],
                     'entity': matched_entity[best_match[0]]
                 }
             linked_entities.append(mention_entity)
