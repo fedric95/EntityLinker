@@ -221,12 +221,14 @@ class Annotator:
                 if(mentions[i] in mentions[j]):
                     candidate_entities[i] = candidate_entities[i].append(candidate_entities[j], ignore_index = True)
                     candidate_entities[i] = candidate_entities[i].drop_duplicates()
-                    
+        
+        
+        linked_entities = []
         for i in range(len(mentions)):
             
             matched_value = list(candidate_entities[i]['value'])
             matched_desc = list(candidate_entities[i]['desc'])
-
+            
 
             entity_text = []
             for value, desc in zip(matched_value, matched_desc):
@@ -241,15 +243,29 @@ class Annotator:
             similarities = ranked[0]['similarities']   
             
             
-            print('mention: '+ mentions[i])
-            print('context: '+ contexts[i])
-            print('type: '   + types[i])
-            print(best_match)
+            #print('mention: '+ mentions[i])
+            #print('context: '+ contexts[i])
+            #print('type: '   + types[i])
+            #print(best_match)
+            
+            
+            mention_entity = {
+               'mention': mentions[i],
+               'context': contexts[i],
+               'type': types[i]
+            }
             if(len(best_match)>0):
-                print(matched_value[best_match[0]])
-                print(matched_desc[best_match[0]])
-                print(entity_text[best_match[0]])
-                print(similarities[best_match[0]])
+                #print(matched_value[best_match[0]])
+                #print(matched_desc[best_match[0]])
+                #print(entity_text[best_match[0]])
+                #print(similarities[best_match[0]])
+                mention_entity['entity']= {
+                    'name': matched_value[best_match[0]],
+                    'description': matched_desc[best_match[0]]
+                }
+            linked_entities.append(mention_entity)
+        return(linked_entities)
+           
                 
     
     # Maps between NER types and associated WikiData Types
