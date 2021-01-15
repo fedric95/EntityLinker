@@ -238,7 +238,7 @@ class Annotator:
                 entity_text.append(new_desc)
                 
             ranked = self.ranker.rank(contexts[i], entity_text)
-            print(ranked)
+            #print(ranked)
             best_match = ranked[0]['argsorted']   
             similarities = ranked[0]['similarities']   
             
