@@ -165,3 +165,107 @@ class Ranker:
         self.model = model
         if(self.model is None):
             self.model = CrossEncoder('sentence-transformers/ce-ms-marco-electra-base', max_length=512)
+            
+            
+            
+            
+class Annotator:
+    
+
+    def annotate(self, text, context_window=3):
+        
+        all_ents, all_types, _ = self.mentiondetector.detect(text)
+        
+        ents = []
+        types = []
+        for all_ent, all_type in zip(all_ents, all_types):
+            if(all_type in list(self.dictionary.keys())):
+                ents.append(all_ent)
+                types.append(all_type)
+        
+        
+        ents_context = self.mentiondetector.context(text, ents, windows=context_window)
+        
+        
+
+
+                
+
+        mentions = []
+        contexts = []
+        candidate_entities = []
+        
+        for i in range(len(ents_context)):
+            mention = ''.join(e.text_with_ws for e in ents_context[i]['mention']).strip()
+            context  = ''.join(e.text_with_ws for e in ents_context[i]['context']).strip()
+            retriever = Retriever(self.dictionary[types[i]])
+            sorted_entities = retriever.retrieve(mention, topk=5)
+            mentions.append(mention)
+            contexts.append(context)
+            candidate_entities.append(sorted_entities)
+        
+        
+        ## Coreference Resolution Heuristic,
+        ## taken from the heuristic examplained in Deep Joint Entity Disambiguation with Local Neural Attention and
+        ## End-to-End Neural Entity Linking
+        ## Permette generalmente di guadagnare tra lo 0.5 e l'1% di accuracy, lo hanno fatto per le entità persona
+        ## ma penso che si possa anche applicare per le entità organizations.
+        for i in range(len(mentions)):
+            if(types[i] not in ['LOC']):
+                continue
+            for j in range(len(mentions)):
+                if(types[j] not in ['LOC']):
+                    continue
+                if(mentions[i] in mentions[j]):
+                    candidate_entities[i] = candidate_entities[i].append(candidate_entities[j], ignore_index = True)
+                    candidate_entities[i] = candidate_entities[i].drop_duplicates()
+                    
+        for i in range(len(mentions)):
+            
+            matched_value = list(candidate_entities[i]['value'])
+            matched_desc = list(candidate_entities[i]['desc'])
+
+
+            entity_text = []
+            for value, desc in zip(matched_value, matched_desc):
+                new_desc = ''
+                if(str(desc)!=''):
+                    new_desc = str(value) + ', ' + str(desc)
+                entity_text.append(new_desc)
+                
+            ranked = self.ranker.rank(contexts[i], entity_text)
+            print(ranked)
+            best_match = ranked[0]['argsorted']   
+            similarities = ranked[0]['similarities']   
+            
+            
+            print('mention: '+ mentions[i])
+            print('context: '+ contexts[i])
+            print('type: '   + types[i])
+            print(best_match)
+            if(len(best_match)>0):
+                print(matched_value[best_match[0]])
+                print(matched_desc[best_match[0]])
+                print(entity_text[best_match[0]])
+                print(similarities[best_match[0]])
+                
+    
+    # Maps between NER types and associated WikiData Types
+    def __init__(self, dictionary, mention_detector = None, ranker = None):
+        
+        self.mentiondetector = mention_detector
+        self.ranker = ranker
+        
+        if(self.mentiondetector is None):
+            self.mentiondetector = MentionDetector()
+        if(self.ranker is None):
+            self.ranker = Ranker()
+        
+        self.wd = WikidataEntities()
+        self.dictionary = dictionary
+        
+    #def __init__(self, dictionary):
+    #    self.mentiondetector = MentionDetector()
+    #    self.ranker = Ranker()
+    #    self.wd = WikidataEntities()
+    #    self.dictionary = dictionary
